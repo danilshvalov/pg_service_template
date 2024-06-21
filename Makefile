@@ -69,9 +69,12 @@ format:
 	find src -name '*pp' -type f | xargs $(CLANG_FORMAT) -i
 	find tests -name '*.py' -type f | xargs autopep8 -i
 
+# Set environment for --in-docker-start
+export DB_CONNECTION := postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@service-postgres:5432/${POSTGRES_DB}
+
 # Internal hidden targets that are used only in docker environment
 --in-docker-start-debug --in-docker-start-release: --in-docker-start-%: install-%
-	psql 'postgresql://user:password@service-postgres:5432/pg_service_template_db_1' -f ./postgresql/data/initial_data.sql
+	psql ${DB_CONNECTION} -f ./postgresql/data/initial_data.sql
 	/home/user/.local/bin/pg_service_template \
 		--config /home/user/.local/etc/pg_service_template/static_config.yaml \
 		--config_vars /home/user/.local/etc/pg_service_template/config_vars.docker.yaml
