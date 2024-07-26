@@ -1,9 +1,20 @@
+KERNEL := $(shell uname -s)
 CMAKE_COMMON_FLAGS ?= -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 CMAKE_DEBUG_FLAGS ?= -DUSERVER_SANITIZE='addr ub'
 CMAKE_RELEASE_FLAGS ?=
 NPROCS ?= $(shell nproc)
 CLANG_FORMAT ?= clang-format
 DOCKER_COMPOSE ?= docker-compose
+
+ifeq ($(KERNEL),Darwin)
+CMAKE_COMMON_FLAGS += -DUSERVER_NO_WERROR=1 -DUSERVER_CHECK_PACKAGE_VERSIONS=0 \
+  -DUSERVER_DOWNLOAD_PACKAGE_CRYPTOPP=1 \
+  -DOPENSSL_ROOT_DIR=$(shell brew --prefix openssl) \
+  -DUSERVER_PG_INCLUDE_DIR=$(shell pg_config --includedir) \
+  -DUSERVER_PG_LIBRARY_DIR=$(shell pg_config --libdir) \
+  -DUSERVER_PG_SERVER_LIBRARY_DIR=$(shell pg_config --pkglibdir) \
+  -DUSERVER_PG_SERVER_INCLUDE_DIR=$(shell pg_config --includedir-server)
+endif
 
 # NOTE: use Makefile.local to override the options defined above.
 -include Makefile.local
